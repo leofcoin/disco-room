@@ -1,0 +1,31 @@
+{
+  "name": "@leofcoin/disco-room",
+  "version": "1.0.0",
+  "description": "",
+  "main": "disco-room.js",
+  "module": "src/disco-room.js",
+  "scripts": {
+    "c": "rollup -c",
+    "preversion": "npm run c",
+    "postversion": "npm publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leofcoin/disco-room.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leofcoin/disco-room/issues"
+  },
+  "homepage": "https://github.com/leofcoin/disco-room#readme",
+  "dependencies": {
+    "ipfs-pubsub-1on1": "0.0.6",
+    "ipfs-pubsub-peer-monitor": "0.0.8"
+  },
+  "devDependencies": {
+    "rollup": "^1.16.1"
+  }
+}
