@@ -1,5 +1,17 @@
-import Channel from 'ipfs-pubsub-1on1';
+// import Channel from 'ipfs-pubsub-1on1';
 import PeerMonitor from 'ipfs-pubsub-peer-monitor';
+
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+function str2ab(str) {
+  var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+  var bufView = new Uint8Array(buf);
+  for (var i=0, strLen=str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
 
 export default class DiscoRoom extends PeerMonitor {
   /**
@@ -15,25 +27,35 @@ export default class DiscoRoom extends PeerMonitor {
     this.peers = [];    
     
     ipfs.pubsub.subscribe(topic, (message) => {
-      message.data = JSON.parse(message.data.toString());
-      const { peer, peers } = message.data;
-      if (peer && peer !== this.id && this.peers.indexOf(peer) === -1) {        
-        this.broadcast({ type: 'peerlist', for: peer, peers: this.peers });
-        this.peers.push(peer);
+      console.log(message.data);
+      try {
+        message.data = ab2str(message.data);
+        message.data = JSON.parse(message.data);
+        
+        const { peer, peers } = message.data;
+        if (peer && peer !== this.id && this.peers.indexOf(peer) === -1) {        
+          this.broadcast({ type: 'peerlist', for: peer, peers: this.peers });
+          this.peers.push(peer);
+        }
+        else if (message.data.for === this.id && peers && peers.length > 1) {
+          peers.forEach(peer => {
+            if (this.peers.indexOf(peer) === -1 && peer !== this.id) this.peers.push(peer);
+          });
+        }
+      } catch (e) {
+        console.error(e);
       }
-      else if (message.data.for === this.id && peers && peers.length > 1) {
-        peers.forEach(peer => {
-          if (this.peers.indexOf(peer) === -1 && peer !== this.id) this.peers.push(peer)
-        })
-      }
-      super.emit('message', message);
+      
+      console.log(message);
+      
+      // super.emit('message', message);
     }, (err, res) => {});
     
     this._peerJoined = this._peerJoined.bind(this);
     this._peerLeft = this._peerLeft.bind(this);
     this._subscribed = this._subscribed.bind(this);
     
-    this.init()
+    this.init();
     // this.ipfs.id().then(({ id }) => {
     // this.broadcast(JSON.stringify({type: 'joining', from: id}))  
     // })
@@ -54,7 +76,7 @@ export default class DiscoRoom extends PeerMonitor {
 
 
   async broadcast(data) {
-    await this.ipfs.pubsub.publish(this.topic, Buffer.from(JSON.stringify(data)));
+    await this.ipfs.pubsub.publish(this.topic, Buffer.from(str2ab(JSON.stringify(data))));
   }
 
   _subscribed() {
