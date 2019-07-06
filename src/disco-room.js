@@ -16,7 +16,6 @@ export default class DiscoRoom extends PeerMonitor {
     
     ipfs.pubsub.subscribe(topic, (message) => {
       message.data = JSON.parse(message.data.toString());
-      console.log(mess);
       const { peer, peers } = message.data;
       if (peer && peer !== this.id && this.peers.indexOf(peer) === -1) {        
         this.broadcast({ type: 'peerlist', for: peer, peers: this.peers });
