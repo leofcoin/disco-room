@@ -26,7 +26,7 @@ export default class DiscoRoom extends PeerMonitor {
     this.topic = topic;
     this.peers = [];    
     
-    ipfs.pubsub.subscribe(topic, (message) => {
+    ipfs.pubsub.subscribe(topic, async (message) => {
       console.log(message.data);
       try {
         message.data = ab2str(message.data);
@@ -35,19 +35,28 @@ export default class DiscoRoom extends PeerMonitor {
         const { peer, peers } = message.data;
         if (peer && peer !== this.id && this.peers.indexOf(peer) === -1) {        
           this.broadcast({ type: 'peerlist', for: peer, peers: this.peers });
-          this.peers.push(peer);
+          try {              
+            await this.ipfs.swarm.connect('/ipfs/' + peer);
+            this.peers.push(peer);
+          } catch (e) {
+            console.error(e);  
+          }
         }
         else if (message.data.for === this.id && peers && peers.length > 1) {
-          peers.forEach(peer => {
-            if (this.peers.indexOf(peer) === -1 && peer !== this.id) this.peers.push(peer);
+          peers.forEach(async peer => {
+            try {              
+              if (this.peers.indexOf(peer) === -1 && peer !== this.id) {
+                await this.ipfs.swarm.connect('/ipfs/' + peer)
+                this.peers.push(peer);
+              }              
+            } catch (e) {
+              console.error(e);  
+            }
           });
         }
       } catch (e) {
         console.error(e);
-      }
-      
-      console.log(message);
-      
+      }      
       // super.emit('message', message);
     }, (err, res) => {});
     
