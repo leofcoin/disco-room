@@ -49,9 +49,6 @@ export default class DiscoRoom extends PeerMonitor {
     this.on('error', error => console.error(error));
     this.on('subscribed', this._subscribed);
     
-    const peers = await this.ipfs.swarm.peers();
-    const peer = peers[0].peer._idB58String;
-    
     this.broadcast({ type: 'peer-joined', peer: this.id });   
   }
 
