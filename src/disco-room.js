@@ -22,7 +22,6 @@ export default class DiscoRoom extends PeerMonitor {
   constructor(ipfs, topic) {
     super(ipfs.pubsub, topic);
     this.ipfs = ipfs;
-
     this.topic = topic;
     this.peers = [];
     
@@ -43,7 +42,7 @@ export default class DiscoRoom extends PeerMonitor {
     this.on('error', error => console.error(error));
     this.on('subscribed', this._subscribed);
     
-    await ipfs.pubsub.subscribe(this.topic, this._onTopicMessage);
+    await this.ipfs.pubsub.subscribe(this.topic, this._onTopicMessage);
     this.broadcast({ type: 'peer-joined', peer: this.id });   
   }
 
