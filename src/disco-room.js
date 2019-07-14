@@ -65,6 +65,9 @@ export default class DiscoRoom extends PeerMonitor {
   
   async _pushAndConnect(peer) {
     if (!this.hasPeer(peer)) this.peers.push(peer);
+    let peers = await this.ipfs.swarm.peers()
+    peers = peers.map(({peer}) => peer._idB58String)
+    if (peers[peer]) return;
     try {
       await this.ipfs.swarm.connect('/p2p-circuit/ipfs/' + peer);
     } catch (e) {
